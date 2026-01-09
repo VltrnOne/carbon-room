@@ -1,6 +1,6 @@
 /* ============================================
-   GLOBAL DATAROOM - AWWWARDS DESIGN SYSTEM
-   Fibonacci-Web-Designer © 2026
+   CARBON[6] - AWWWARDS DESIGN SYSTEM
+   Pressure Creates. Structure Enables.
    ============================================ */
 
 :root {
@@ -13,10 +13,10 @@
   --gray-light: #999999;
   --white: #e0e0e0;
   --white-pure: #ffffff;
-  --accent: #00ff88;
-  --accent-dark: #00cc6a;
-  --accent-dim: rgba(0, 255, 136, 0.1);
-  --accent-glow: rgba(0, 255, 136, 0.3);
+  --accent: #2D7DD2;
+  --accent-dark: #1a5fa8;
+  --accent-dim: rgba(45, 125, 210, 0.1);
+  --accent-glow: rgba(45, 125, 210, 0.3);
 
   /* Golden Ratio Typography */
   --base-size: 16px;
