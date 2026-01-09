@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Carbon Room IP Registry Manifest",
+  "description": "Blockchain-based intellectual property registration system with legal document generation",
+  "version": "2.0.0",
+  "protocols": {
+    "d143377a": {
+      "id": "d143377a",
+      "name": "GOD_MODE_WIZARD",
+      "tags": [
+        "wizard",
+        "newbie",
+        "setup",
+        "onboarding"
+      ],
+      "description": "Complete wizard guide for new team members to get started with the system",
+      "type": "document",
+      "filename": "GOD_MODE_WIZARD_FOR_NEWBIES.pdf",
+      "created_at": "2026-01-09T08:54:29.560477",
+      "blockchain_hash": "30b3778c42bac9e73156cca4a89567074de17bd61cd4ddbdfec2edd94a330457",
+      "invocations": 1,
+      "creator_name": "System Administrator",
+      "creator_company": null,
+      "version": "1.0",
+      "co_creators": [],
+      "is_remix": false,
+      "original_creator": null,
+      "original_asset": null,
+      "original_hash": null,
+      "watermark": "C6-D143377A-LEGACY",
+      "certificate_id": "C6-30B3778C42BAC9E7"
+    }
+  },
+  "stats": {
+    "total_invocations": 1,
+    "total_creators": 1,
+    "total_remixes": 0
+  },
+  "schema": {
+    "protocol": {
+      "required_fields": [
+        "id",
+        "name",
+        "tags",
+        "description",
+        "type",
+        "filename",
+        "created_at",
+        "blockchain_hash",
+        "creator_name",
+        "version",
+        "watermark",
+        "certificate_id"
+      ],
+      "optional_fields": [
+        "creator_company",
+        "co_creators",
+        "is_remix",
+        "original_creator",
+        "original_asset",
+        "original_hash"
+      ],
+      "field_types": {
+        "id": "string (8 chars UUID)",
+        "name": "string",
+        "tags": "array of strings",
+        "description": "string",
+        "type": "enum: code|config|agent|document|design|media",
+        "filename": "string",
+        "created_at": "ISO 8601 timestamp",
+        "blockchain_hash": "SHA-256 hex string",
+        "invocations": "integer",
+        "creator_name": "string",
+        "creator_company": "string|null",
+        "version": "semantic version string",
+        "co_creators": "array of strings",
+        "is_remix": "boolean",
+        "original_creator": "string|null",
+        "original_asset": "string|null",
+        "original_hash": "SHA-256 hex string|null",
+        "watermark": "string (format: C6-{asset_id}-{creator_hash})",
+        "certificate_id": "string (format: C6-{hash[:16]})"
+      }
+    }
+  }
+}

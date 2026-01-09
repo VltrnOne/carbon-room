@@ -1,0 +1,108 @@
+# Carbon Room - Render Deployment Configuration
+# Backup deployment target for thecarbon6.agency
+# https://render.com/docs/blueprint-spec
+
+services:
+  # ============================================
+  # WEB SERVICE (FastAPI Application)
+  # ============================================
+  - type: web
+    name: carbon-room
+    runtime: python
+    region: oregon  # or ohio, frankfurt, singapore
+
+    # Build settings
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r deployment/requirements.txt
+
+    # Start command
+    startCommand: uvicorn api.server:app --host 0.0.0.0 --port $PORT
+
+    # Health check
+    healthCheckPath: /api/stats
+
+    # Environment variables
+    envVars:
+      - key: ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: BASE_URL
+        sync: false  # Set manually in dashboard
+      - key: SECRET_KEY
+        generateValue: true
+      - key: API_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://carbon-room.onrender.com
+      - key: LOG_LEVEL
+        value: INFO
+      - key: PYTHON_VERSION
+        value: "3.11"
+
+    # Instance configuration
+    plan: free  # Options: free, starter, standard, pro
+    numInstances: 1
+
+    # Auto-deploy on push
+    autoDeploy: true
+
+    # Disk (persistent storage for vault)
+    disk:
+      name: carbon-room-vault
+      mountPath: /data/vault
+      sizeGB: 1
+
+    # Branch to deploy from
+    branch: main
+
+    # Build filter (only deploy when these paths change)
+    buildFilter:
+      paths:
+        - api/**
+        - templates/**
+        - static/**
+        - deployment/requirements.txt
+
+  # ============================================
+  # CRON JOB (Optional: Scheduled tasks)
+  # ============================================
+  # - type: cron
+  #   name: carbon-room-cleanup
+  #   runtime: python
+  #   schedule: "0 0 * * 0"  # Weekly on Sunday
+  #   buildCommand: pip install -r deployment/requirements.txt
+  #   startCommand: python scripts/cleanup.py
+  #   envVars:
+  #     - fromService:
+  #         name: carbon-room
+  #         type: web
+  #         envVarKey: DATABASE_URL
+
+# ============================================
+# ENVIRONMENT GROUPS
+# ============================================
+envVarGroups:
+  - name: carbon-room-secrets
+    envVars:
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+
+# ============================================
+# DATABASES (Optional for future)
+# ============================================
+# databases:
+#   - name: carbon-room-db
+#     databaseName: carbon_room
+#     user: carbon_admin
+#     plan: free
+#     region: oregon
+
+# ============================================
+# PREVIEW ENVIRONMENTS
+# ============================================
+previewsEnabled: true
+previewsExpireAfterDays: 7

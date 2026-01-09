@@ -1,0 +1,95 @@
+# ============================================================================
+# Carbon Room - Docker Compose Configuration
+# ============================================================================
+# Development and production docker-compose setup
+#
+# Usage:
+#   Development: docker-compose up
+#   Production:  docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # Main API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: carbon-room-api
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    environment:
+      - ENV=development
+      - DEBUG=true
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://carbon_room:carbon_room_pass@db:5432/carbon_room
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - API_KEY=dev-api-key
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8003
+    volumes:
+      # Mount source code for development (hot reload)
+      - .:/app:cached
+      # Persist uploads and certificates
+      - carbon-uploads:/app/uploads
+      - carbon-certs:/app/certificates
+      - carbon-docs:/app/documents
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: carbon-room-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=carbon_room
+      - POSTGRES_PASSWORD=carbon_room_pass
+      - POSTGRES_DB=carbon_room
+    volumes:
+      - carbon-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U carbon_room -d carbon_room"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Database Admin (optional - for development)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: carbon-room-pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@carbonroom.io
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_LISTEN_PORT=5050
+    ports:
+      - "5050:5050"
+    depends_on:
+      - db
+    profiles:
+      - dev
+
+volumes:
+  carbon-db-data:
+    name: carbon-room-db-data
+  carbon-uploads:
+    name: carbon-room-uploads
+  carbon-certs:
+    name: carbon-room-certs
+  carbon-docs:
+    name: carbon-room-docs
+
+networks:
+  default:
+    name: carbon-room-network

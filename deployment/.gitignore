@@ -1,0 +1,61 @@
+# Deployment .gitignore
+# Ignore sensitive files that should not be committed
+
+# Environment files with real secrets
+.env
+*.env.local
+
+# Keep templates
+!.env.production
+!.env.example
+
+# Build artifacts
+dist/
+*.tar.gz
+*.zip
+
+# Logs
+*.log
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+backups/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Vault contents (sensitive)
+vault/*.enc
+vault/*.key
+
+# Telemetry data
+telemetry/
+
+# SSH keys (never commit)
+*.pem
+*.key
+id_rsa*
