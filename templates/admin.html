@@ -25,17 +25,25 @@
           <div style="width: 60px;"></div>
         </div>
 
-        <nav class="nav">
-          <a href="/admin" class="nav-link active" data-tour="nav">Dashboard</a>
+        <nav class="nav" data-tour="nav">
+          <a href="/admin" class="nav-link active">Dashboard</a>
           <a href="/admin/protocols" class="nav-link">Protocols</a>
           <a href="/admin/telemetry" class="nav-link">Telemetry</a>
           <a href="/user" class="nav-link">User Portal</a>
           <button class="btn btn-ghost" onclick="startTour()" style="margin-left: auto;" title="Take a guided tour">
-            <span>🎯</span>
+            <span>[?]</span>
             <span>Tour</span>
           </button>
         </nav>
       </header>
+
+      <!-- IP Protection Notice -->
+      <div class="card ip-notice" style="border-left: 3px solid var(--accent); animation-delay: 0.05s;">
+        <p class="text-muted" style="margin: 0; font-size: var(--text-sm);">
+          <strong style="color: var(--accent);">IP PROTECTION PROTOCOL:</strong>
+          Creating a generic, productized protocol that protects your IP while teaching anyone how to integrate their agent ecosystem.
+        </p>
+      </div>
 
       <!-- Stats Overview -->
       <div class="stats-grid" id="statsGrid" data-tour="stats">
@@ -200,7 +208,7 @@
             <label class="form-label">File Upload <span style="color: var(--accent);">*</span></label>
             <div class="form-file" id="dropZone">
               <label class="file-input-label" for="fileInput">
-                <div class="file-icon">📁</div>
+                <div class="file-icon">[FILE]</div>
                 <div>
                   <span id="fileLabel">Click to browse or drag file here</span>
                   <div class="text-muted" style="font-size: var(--text-xs); margin-top: 5px;">
@@ -213,7 +221,7 @@
           </div>
 
           <button type="submit" class="btn btn-primary" id="submitBtn">
-            <span>🔐</span>
+            <span>[+]</span>
             <span>Register & Protect IP</span>
           </button>
 
@@ -226,13 +234,13 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="card-title" style="margin-bottom: 0;">Registered Protocols</h2>
           <button class="btn btn-ghost" onclick="loadProtocols()">
-            <span>🔄</span>
+            <span>[R]</span>
             <span>Refresh</span>
           </button>
         </div>
 
         <div class="search-bar">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon">[S]</span>
           <input
             type="text"
             class="search-input"
@@ -354,7 +362,6 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
             </td>
             <td>
               <span class="invocation-count">
-                <span>⚡</span>
                 <span>${p.invocations}</span>
               </span>
             </td>
@@ -363,7 +370,7 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
             </td>
             <td>
               <button class="btn btn-ghost btn-icon" onclick="viewProtocolDetails('${p.name}')" title="View Details">
-                👁️
+                [V]
               </button>
             </td>
           </tr>
@@ -450,7 +457,7 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
           if (response.ok) {
             statusDiv.innerHTML = `
               <div class="alert alert-success">
-                ✅ Asset registered successfully! View certificate below.
+                Asset registered successfully! View certificate below.
               </div>
             `;
 
@@ -470,12 +477,12 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
         } catch (error) {
           statusDiv.innerHTML = `
             <div class="alert alert-error">
-              ❌ ${error.message}
+              Error: ${error.message}
             </div>
           `;
         } finally {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = '<span>🔐</span><span>Upload & Register IP</span>';
+          submitBtn.innerHTML = '<span>[+]</span><span>Register & Protect IP</span>';
         }
       });
     }
@@ -542,7 +549,6 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
         <div class="certificate">
           <div class="certificate-content">
             <div class="certificate-title">
-              <div style="margin-bottom: 10px;">🔐</div>
               CARBON ROOM [6]<br>IP PROTECTION CERTIFICATE
             </div>
 
@@ -566,12 +572,8 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
               <div class="certificate-hash">${data.blockchain_hash || 'Pending...'}</div>
             </div>
 
-            <div class="certificate-qr">
-              QR Code<br>Placeholder
-            </div>
-
             <button class="btn btn-primary" onclick="downloadCertificate('${assetName}', '${data.blockchain_hash}')">
-              <span>📥</span>
+              <span>[D]</span>
               <span>Download Certificate</span>
             </button>
 
@@ -629,17 +631,16 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
     let tourActive = false;
 
     function startTour() {
-      // Check if first visit
-      const hasVisited = localStorage.getItem('carbon_tour_completed');
-
       tourActive = true;
       currentTourStep = 0;
+      document.body.classList.add('tour-active');
       showTourStep(currentTourStep);
     }
 
     function showTourStep(stepIndex) {
       // Remove any existing tour elements
       document.querySelectorAll('.tour-overlay, .tour-tooltip').forEach(el => el.remove());
+      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
 
       if (stepIndex >= tourSteps.length) {
         endTour();
@@ -651,13 +652,19 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
 
       if (!targetEl) {
         // Skip to next if target not found
-        showTourStep(stepIndex + 1);
+        currentTourStep++;
+        showTourStep(currentTourStep);
         return;
       }
 
-      // Create overlay
+      // Create overlay with hole for target
       const overlay = document.createElement('div');
       overlay.className = 'tour-overlay';
+      overlay.onclick = function(e) {
+        if (e.target === overlay) {
+          endTour();
+        }
+      };
       document.body.appendChild(overlay);
 
       // Highlight target
@@ -666,78 +673,72 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
       // Scroll to element
       targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-      // Create tooltip
+      // Create tooltip after scroll
       setTimeout(() => {
         const tooltip = document.createElement('div');
         tooltip.className = 'tour-tooltip';
         tooltip.innerHTML = `
           <div class="tour-tooltip-header">
             <span class="tour-step-indicator">Step ${stepIndex + 1} of ${tourSteps.length}</span>
-            <button class="tour-close" onclick="endTour()">×</button>
+            <button class="tour-close" onclick="endTour()">X</button>
           </div>
           <h3 class="tour-tooltip-title">${step.title}</h3>
           <p class="tour-tooltip-content">${step.content}</p>
           <div class="tour-tooltip-actions">
-            ${stepIndex > 0 ? '<button class="btn btn-ghost" onclick="prevTourStep()">← Back</button>' : ''}
-            <button class="btn btn-primary" onclick="nextTourStep()">
-              ${stepIndex === tourSteps.length - 1 ? 'Finish' : 'Next →'}
+            ${stepIndex > 0 ? '<button class="btn btn-ghost tour-btn" onclick="prevTourStep()">Back</button>' : ''}
+            <button class="btn btn-primary tour-btn" onclick="nextTourStep()">
+              ${stepIndex === tourSteps.length - 1 ? 'Finish' : 'Next'}
             </button>
           </div>
         `;
 
         // Position tooltip
         const rect = targetEl.getBoundingClientRect();
-        tooltip.style.position = 'fixed';
 
         switch(step.position) {
           case 'bottom':
-            tooltip.style.top = (rect.bottom + 15) + 'px';
+            tooltip.style.top = (rect.bottom + window.scrollY + 15) + 'px';
             tooltip.style.left = (rect.left + rect.width/2) + 'px';
             tooltip.style.transform = 'translateX(-50%)';
             break;
           case 'top':
-            tooltip.style.bottom = (window.innerHeight - rect.top + 15) + 'px';
+            tooltip.style.top = (rect.top + window.scrollY - 15) + 'px';
             tooltip.style.left = (rect.left + rect.width/2) + 'px';
-            tooltip.style.transform = 'translateX(-50%)';
+            tooltip.style.transform = 'translate(-50%, -100%)';
             break;
           case 'left':
-            tooltip.style.top = (rect.top + rect.height/2) + 'px';
-            tooltip.style.right = (window.innerWidth - rect.left + 15) + 'px';
-            tooltip.style.transform = 'translateY(-50%)';
+            tooltip.style.top = (rect.top + window.scrollY + rect.height/2) + 'px';
+            tooltip.style.left = (rect.left - 15) + 'px';
+            tooltip.style.transform = 'translate(-100%, -50%)';
             break;
           case 'right':
-            tooltip.style.top = (rect.top + rect.height/2) + 'px';
+            tooltip.style.top = (rect.top + window.scrollY + rect.height/2) + 'px';
             tooltip.style.left = (rect.right + 15) + 'px';
             tooltip.style.transform = 'translateY(-50%)';
             break;
         }
 
         document.body.appendChild(tooltip);
-      }, 300);
+      }, 400);
     }
 
     function nextTourStep() {
-      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
       currentTourStep++;
       showTourStep(currentTourStep);
     }
 
     function prevTourStep() {
-      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
       currentTourStep--;
       showTourStep(currentTourStep);
     }
 
     function endTour() {
       tourActive = false;
-      document.querySelectorAll('.tour-overlay, .tour-tooltip, .tour-highlight').forEach(el => {
-        el.classList.remove('tour-highlight');
-        if (el.classList.contains('tour-overlay') || el.classList.contains('tour-tooltip')) {
-          el.remove();
-        }
-      });
+      document.body.classList.remove('tour-active');
+      document.querySelectorAll('.tour-overlay, .tour-tooltip').forEach(el => el.remove());
+      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
       localStorage.setItem('carbon_tour_completed', 'true');
-      showToast('🎉 Tour complete! Click the Tour button anytime to revisit.', 'success');
+      showToast('Tour complete! Click the Tour button anytime to revisit.', 'success');
     }
 
     // Auto-start tour for new users
@@ -758,17 +759,18 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
     // AI CHAT ASSISTANT
     // ==========================================
     const chatKnowledge = {
-      'register': 'To register a new asset: 1) Fill in the Asset Name, 2) Add your Creator Name, 3) Select the asset type, 4) Add tags for searchability, 5) Write a description, 6) Upload your file, 7) Click "Register & Protect IP". You\'ll receive a blockchain certificate!',
+      'register': 'To register a new asset: 1) Fill in the Asset Name, 2) Add your Creator Name, 3) Select the asset type, 4) Add tags for searchability, 5) Write a description, 6) Upload your file, 7) Click "Register & Protect IP". You will receive a blockchain certificate!',
       'upload': 'To upload an asset, scroll to the "Register New Asset" section. Fill out all required fields (marked with *), drag-and-drop or browse for your file, then click the register button.',
       'certificate': 'After registering an asset, you receive a blockchain certificate with a unique hash. This proves ownership and creation date. You can download it or share the hash for verification.',
-      'remix': 'If your work is based on someone else\'s asset, check the "Is this a Remix?" box. You\'ll need to credit the original creator and their asset name.',
+      'remix': 'If your work is based on someone else\'s asset, check the "Is this a Remix?" box. You will need to credit the original creator and their asset name.',
       'search': 'Use the search bar in the Registered Protocols section to find assets by name, tags, or type. The table updates in real-time as you type.',
       'telemetry': 'Telemetry tracks how your assets are being used - who invokes them, when, and how often. View detailed analytics in the Telemetry tab.',
       'blockchain': 'Each registered asset gets a SHA-256 blockchain hash. This creates an immutable record of your IP ownership that can be verified independently.',
       'types': 'Asset types include: Document (written content), Code (scripts/programs), Config (configuration files), Agent (AI agents/bots), Template (reusable templates), Media (images/video/audio).',
-      'invoke': 'When users "invoke" a protocol, they\'re accessing it. Each invocation is tracked for analytics. Only authorized users can invoke protected assets.',
+      'invoke': 'When users "invoke" a protocol, they are accessing it. Each invocation is tracked for analytics. Only authorized users can invoke protected assets.',
+      'protection': 'IP PROTECTION PROTOCOL: Creating a generic, productized protocol that protects your IP while teaching anyone how to integrate their agent ecosystem.',
       'help': 'I can help with: registering assets, uploading files, understanding certificates, searching protocols, viewing telemetry, and blockchain verification. Just ask!',
-      'default': 'I\'m your Carbon Room assistant! I can help with registering assets, understanding blockchain protection, searching protocols, and more. Try asking about "how to register", "certificates", or "blockchain".'
+      'default': 'I am your Carbon Room assistant! I can help with registering assets, understanding blockchain protection, searching protocols, and more. Try asking about "how to register", "certificates", or "blockchain".'
     };
 
     function findBestAnswer(query) {
@@ -800,6 +802,9 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
       }
       if (q.includes('invoke') || q.includes('use') || q.includes('access')) {
         return chatKnowledge['invoke'];
+      }
+      if (q.includes('protect') || q.includes('ip') || q.includes('rule')) {
+        return chatKnowledge['protection'];
       }
       if (q.includes('help') || q.includes('what can')) {
         return chatKnowledge['help'];
@@ -844,7 +849,7 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
         const answer = findBestAnswer(query);
         messages.innerHTML += `
           <div class="chat-message assistant">
-            <div class="chat-avatar">🤖</div>
+            <div class="chat-avatar">[C6]</div>
             <div class="chat-bubble assistant">${answer}</div>
           </div>
         `;
@@ -865,7 +870,7 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
     });
   </script>
 
-  <!-- Guided Tour Styles -->
+  <!-- Guided Tour & Chat Styles -->
   <style>
     .main-title {
       font-size: 2.5rem;
@@ -876,32 +881,43 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
       text-shadow: 0 0 30px var(--accent-glow);
     }
 
+    .ip-notice {
+      background: var(--surface);
+    }
+
+    /* Tour Styles */
+    body.tour-active {
+      overflow: hidden;
+    }
+
     .tour-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 9998;
-      pointer-events: none;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 9990;
+      cursor: pointer;
     }
 
     .tour-highlight {
       position: relative;
-      z-index: 9999;
-      box-shadow: 0 0 0 4px var(--accent), 0 0 30px var(--accent-glow);
+      z-index: 9995 !important;
+      box-shadow: 0 0 0 4px var(--accent), 0 0 40px var(--accent-glow) !important;
       border-radius: var(--radius);
+      background: var(--surface) !important;
     }
 
     .tour-tooltip {
-      position: fixed;
+      position: absolute;
       background: var(--surface);
-      border: 1px solid var(--accent);
+      border: 2px solid var(--accent);
       border-radius: var(--radius);
       padding: var(--space-4);
-      max-width: 350px;
-      z-index: 10000;
+      max-width: 380px;
+      min-width: 300px;
+      z-index: 9999;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
     }
 
@@ -909,46 +925,54 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: var(--space-2);
+      margin-bottom: var(--space-3);
     }
 
     .tour-step-indicator {
-      font-size: var(--text-xs);
+      font-size: var(--text-sm);
       color: var(--accent);
       font-weight: 600;
     }
 
     .tour-close {
-      background: none;
-      border: none;
-      color: var(--gray);
-      font-size: 1.5rem;
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      color: var(--gray-light);
+      font-size: var(--text-sm);
       cursor: pointer;
-      padding: 0;
-      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
     }
 
     .tour-close:hover {
       color: var(--white);
+      border-color: var(--accent);
     }
 
     .tour-tooltip-title {
       font-size: var(--text-lg);
       color: var(--white);
       margin: 0 0 var(--space-2);
+      font-weight: 600;
     }
 
     .tour-tooltip-content {
       color: var(--gray-light);
       font-size: var(--text-sm);
-      line-height: 1.5;
+      line-height: 1.6;
       margin: 0 0 var(--space-4);
     }
 
     .tour-tooltip-actions {
       display: flex;
-      gap: var(--space-2);
+      gap: var(--space-3);
       justify-content: flex-end;
+    }
+
+    .tour-btn {
+      padding: 8px 16px !important;
+      font-size: var(--text-sm) !important;
     }
 
     /* Chat Widget Styles */
@@ -960,8 +984,8 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
     }
 
     .chat-toggle {
-      width: 60px;
-      height: 60px;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
       background: var(--accent);
       border: none;
@@ -969,7 +993,9 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: var(--text-sm);
+      font-weight: bold;
+      color: var(--black);
       box-shadow: 0 4px 20px var(--accent-glow);
       transition: transform 0.2s, box-shadow 0.2s;
     }
@@ -1046,6 +1072,9 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      font-size: 10px;
+      font-weight: bold;
+      color: var(--accent);
     }
 
     .chat-bubble {
@@ -1099,6 +1128,8 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
       align-items: center;
       justify-content: center;
       transition: background 0.2s;
+      color: var(--black);
+      font-weight: bold;
     }
 
     .chat-send:hover {
@@ -1110,24 +1141,24 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
   <div id="chatWidget">
     <div class="chat-panel" id="chatPanel">
       <div class="chat-header">
-        <h4><span>🤖</span> Carbon Assistant</h4>
-        <button class="tour-close" onclick="toggleChat()">×</button>
+        <h4>[C6] Carbon Assistant</h4>
+        <button class="tour-close" onclick="toggleChat()">X</button>
       </div>
       <div class="chat-messages" id="chatMessages">
         <div class="chat-message assistant">
-          <div class="chat-avatar">🤖</div>
+          <div class="chat-avatar">[C6]</div>
           <div class="chat-bubble assistant">
-            Hi! I'm your Carbon Room assistant. I can help you with registering assets, understanding blockchain protection, finding protocols, and more. What would you like to know?
+            Welcome to Carbon Room. I can help you with registering assets, understanding blockchain protection, finding protocols, and more. What would you like to know?
           </div>
         </div>
       </div>
       <div class="chat-input-area">
         <input type="text" id="chatInput" placeholder="Ask me anything...">
-        <button class="chat-send" onclick="sendChatMessage()">➤</button>
+        <button class="chat-send" onclick="sendChatMessage()">&gt;</button>
       </div>
     </div>
     <button class="chat-toggle" onclick="toggleChat()" title="Chat with AI Assistant">
-      💬
+      [?]
     </button>
   </div>
 </body>

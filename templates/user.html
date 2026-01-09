@@ -30,11 +30,19 @@
           <a href="/user/history" class="nav-link">My History</a>
           <a href="/admin" class="nav-link">Admin Portal</a>
           <button class="btn btn-ghost" onclick="startTour()" style="margin-left: auto;" title="Take a guided tour">
-            <span>🎯</span>
+            <span>[?]</span>
             <span>Tour</span>
           </button>
         </nav>
       </header>
+
+      <!-- IP Protection Notice -->
+      <div class="card ip-notice" style="border-left: 3px solid var(--accent); animation-delay: 0.05s;">
+        <p class="text-muted" style="margin: 0; font-size: var(--text-sm);">
+          <strong style="color: var(--accent);">IP PROTECTION PROTOCOL:</strong>
+          Creating a generic, productized protocol that protects your IP while teaching anyone how to integrate their agent ecosystem.
+        </p>
+      </div>
 
       <!-- Welcome Card -->
       <div class="card" style="animation-delay: 0.1s;">
@@ -48,7 +56,7 @@
       <!-- Search & Filters -->
       <div class="card" style="animation-delay: 0.2s;" data-tour="search">
         <div class="search-bar" style="margin-bottom: var(--space-4);">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon">[S]</span>
           <input
             type="text"
             class="search-input"
@@ -60,16 +68,16 @@
         <div class="flex justify-between items-center" style="margin-bottom: var(--space-3);">
           <label class="form-label" style="margin-bottom: 0;">Filter by Type:</label>
           <button class="btn btn-ghost" style="font-size: var(--text-xs); padding: var(--space-2) var(--space-3);" onclick="loadProtocols()">
-            🔄 Refresh
+            [R] Refresh
           </button>
         </div>
 
         <div class="filter-group" id="filterGroup">
           <button class="filter-chip active" data-type="all">All</button>
-          <button class="filter-chip" data-type="document">📄 Documents</button>
-          <button class="filter-chip" data-type="code">💻 Code</button>
-          <button class="filter-chip" data-type="config">⚙️ Config</button>
-          <button class="filter-chip" data-type="agent">🤖 Agents</button>
+          <button class="filter-chip" data-type="document">[DOC] Documents</button>
+          <button class="filter-chip" data-type="code">[CODE] Code</button>
+          <button class="filter-chip" data-type="config">[CFG] Config</button>
+          <button class="filter-chip" data-type="agent">[AGT] Agents</button>
         </div>
       </div>
 
@@ -115,7 +123,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
     <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title" id="modalProtocolName">Protocol Name</h3>
-        <button class="modal-close" onclick="closeInvokeModal()">×</button>
+        <button class="modal-close" onclick="closeInvokeModal()">x</button>
       </div>
 
       <div id="modalContent">
@@ -138,7 +146,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
           <h4 class="text-accent mb-2">Usage Stats</h4>
           <p class="text-muted">
             <span class="invocation-count">
-              <span>⚡</span>
+              <span>[*]</span>
               <span id="modalInvocations">0</span>
             </span>
             <span class="text-muted"> times invoked</span>
@@ -163,7 +171,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
 
         <div class="flex gap-3" style="margin-top: var(--space-4);">
           <button class="btn btn-primary" onclick="invokeProtocol()" id="invokeBtn">
-            <span>⚡</span>
+            <span>[*]</span>
             <span>Invoke Protocol</span>
           </button>
           <button class="btn btn-ghost" onclick="closeInvokeModal()">
@@ -195,7 +203,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
       if (userData) {
         badgeContainer.innerHTML = `
           <div class="user-badge">
-            <span class="user-badge-icon">👤</span>
+            <span class="user-badge-icon">[U]</span>
             <span>${userData.name}</span>
           </div>
         `;
@@ -257,7 +265,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%;">
-              <span>🔓</span>
+              <span>[+]</span>
               <span>Request Access</span>
             </button>
           </form>
@@ -282,7 +290,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
         document.querySelector('.modal-overlay.active').remove();
 
         // Show success
-        showToast('✅ Access granted! Welcome to CARBON ROOM.', 'success');
+        showToast('[OK] Access granted! Welcome to CARBON ROOM.', 'success');
 
         // Update UI
         checkAuthentication();
@@ -341,7 +349,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
             ${p.is_remix ? `
               <div class="remix-chain">
                 <span>${p.original_creator}</span>
-                <span class="remix-arrow">→</span>
+                <span class="remix-arrow">-></span>
                 <span>${p.creator_name}</span>
               </div>
             ` : ''}
@@ -352,10 +360,10 @@ python quick_start.py invoke PROTOCOL_NAME your_username
 
             <div class="protocol-meta">
               <span class="invocation-count">
-                <span>⚡</span>
+                <span>[*]</span>
                 <span>${p.invocations} invocations</span>
               </span>
-              <span class="text-muted">→</span>
+              <span class="text-muted">-></span>
             </div>
           </div>
         `).join('');
@@ -475,7 +483,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
         if (response.ok) {
           statusDiv.innerHTML = `
             <div class="alert alert-success">
-              ✅ Protocol invoked successfully!<br>
+              [OK] Protocol invoked successfully!<br>
               <strong>Protocol:</strong> ${result.protocol.name}<br>
               <strong>Type:</strong> ${result.protocol.type}<br>
               <strong>Telemetry:</strong> Collected and stored
@@ -493,12 +501,12 @@ python quick_start.py invoke PROTOCOL_NAME your_username
       } catch (error) {
         statusDiv.innerHTML = `
           <div class="alert alert-error">
-            ❌ ${error.message}
+            [ERR] ${error.message}
           </div>
         `;
       } finally {
         invokeBtn.disabled = false;
-        invokeBtn.innerHTML = '<span>⚡</span><span>Invoke Protocol</span>';
+        invokeBtn.innerHTML = '<span>[*]</span><span>Invoke Protocol</span>';
       }
     }
 
@@ -517,7 +525,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
     });
 
     // ==========================================
-    // GUIDED TOUR SYSTEM
+    // GUIDED TOUR SYSTEM (FIXED POSITIONING)
     // ==========================================
     const tourSteps = [
       {
@@ -552,11 +560,14 @@ python quick_start.py invoke PROTOCOL_NAME your_username
     function startTour() {
       tourActive = true;
       currentTourStep = 0;
+      document.body.classList.add('tour-active');
       showTourStep(currentTourStep);
     }
 
     function showTourStep(stepIndex) {
+      // Clean up previous step
       document.querySelectorAll('.tour-overlay, .tour-tooltip').forEach(el => el.remove());
+      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
 
       if (stepIndex >= tourSteps.length) {
         endTour();
@@ -571,48 +582,57 @@ python quick_start.py invoke PROTOCOL_NAME your_username
         return;
       }
 
+      // Create overlay
       const overlay = document.createElement('div');
       overlay.className = 'tour-overlay';
+      overlay.addEventListener('click', () => endTour());
       document.body.appendChild(overlay);
 
+      // Highlight target
       targetEl.classList.add('tour-highlight');
       targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
+      // Create tooltip after scroll
       setTimeout(() => {
         const tooltip = document.createElement('div');
         tooltip.className = 'tour-tooltip';
         tooltip.innerHTML = `
           <div class="tour-tooltip-header">
             <span class="tour-step-indicator">Step ${stepIndex + 1} of ${tourSteps.length}</span>
-            <button class="tour-close" onclick="endTour()">×</button>
+            <button class="tour-close" onclick="endTour()">x</button>
           </div>
           <h3 class="tour-tooltip-title">${step.title}</h3>
           <p class="tour-tooltip-content">${step.content}</p>
           <div class="tour-tooltip-actions">
-            ${stepIndex > 0 ? '<button class="btn btn-ghost" onclick="prevTourStep()">← Back</button>' : ''}
+            ${stepIndex > 0 ? '<button class="btn btn-ghost" onclick="prevTourStep()">Back</button>' : ''}
             <button class="btn btn-primary" onclick="nextTourStep()">
-              ${stepIndex === tourSteps.length - 1 ? 'Finish' : 'Next →'}
+              ${stepIndex === tourSteps.length - 1 ? 'Finish' : 'Next'}
             </button>
           </div>
         `;
 
+        // Position tooltip using absolute positioning with scroll offset
         const rect = targetEl.getBoundingClientRect();
-        tooltip.style.position = 'fixed';
 
         switch(step.position) {
           case 'bottom':
-            tooltip.style.top = (rect.bottom + 15) + 'px';
+            tooltip.style.top = (rect.bottom + window.scrollY + 15) + 'px';
             tooltip.style.left = (rect.left + rect.width/2) + 'px';
             tooltip.style.transform = 'translateX(-50%)';
             break;
           case 'top':
-            tooltip.style.bottom = (window.innerHeight - rect.top + 15) + 'px';
+            tooltip.style.top = (rect.top + window.scrollY - 15) + 'px';
             tooltip.style.left = (rect.left + rect.width/2) + 'px';
-            tooltip.style.transform = 'translateX(-50%)';
+            tooltip.style.transform = 'translate(-50%, -100%)';
             break;
           case 'left':
-            tooltip.style.top = (rect.top + rect.height/2) + 'px';
-            tooltip.style.right = (window.innerWidth - rect.left + 15) + 'px';
+            tooltip.style.top = (rect.top + window.scrollY + rect.height/2) + 'px';
+            tooltip.style.left = (rect.left - 15) + 'px';
+            tooltip.style.transform = 'translate(-100%, -50%)';
+            break;
+          case 'right':
+            tooltip.style.top = (rect.top + window.scrollY + rect.height/2) + 'px';
+            tooltip.style.left = (rect.right + 15) + 'px';
             tooltip.style.transform = 'translateY(-50%)';
             break;
         }
@@ -622,27 +642,22 @@ python quick_start.py invoke PROTOCOL_NAME your_username
     }
 
     function nextTourStep() {
-      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
       currentTourStep++;
       showTourStep(currentTourStep);
     }
 
     function prevTourStep() {
-      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
       currentTourStep--;
       showTourStep(currentTourStep);
     }
 
     function endTour() {
       tourActive = false;
-      document.querySelectorAll('.tour-overlay, .tour-tooltip, .tour-highlight').forEach(el => {
-        el.classList.remove('tour-highlight');
-        if (el.classList.contains('tour-overlay') || el.classList.contains('tour-tooltip')) {
-          el.remove();
-        }
-      });
+      document.body.classList.remove('tour-active');
+      document.querySelectorAll('.tour-overlay, .tour-tooltip').forEach(el => el.remove());
+      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
       localStorage.setItem('carbon_user_tour_completed', 'true');
-      showToast('🎉 Tour complete! Click Tour anytime to revisit.', 'success');
+      showToast('[OK] Tour complete! Click Tour anytime to revisit.', 'success');
     }
 
     // Auto-start tour for new users
@@ -719,7 +734,7 @@ python quick_start.py invoke PROTOCOL_NAME your_username
         const answer = findBestAnswer(query);
         messages.innerHTML += `
           <div class="chat-message assistant">
-            <div class="chat-avatar">🤖</div>
+            <div class="chat-avatar">[C6]</div>
             <div class="chat-bubble assistant">${answer}</div>
           </div>
         `;
@@ -748,6 +763,10 @@ python quick_start.py invoke PROTOCOL_NAME your_username
       text-shadow: 0 0 30px var(--accent-glow);
     }
 
+    body.tour-active {
+      overflow: hidden;
+    }
+
     .tour-overlay {
       position: fixed;
       top: 0;
@@ -755,26 +774,28 @@ python quick_start.py invoke PROTOCOL_NAME your_username
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.7);
-      z-index: 9998;
-      pointer-events: none;
+      z-index: 9990;
+      cursor: pointer;
     }
 
     .tour-highlight {
       position: relative;
-      z-index: 9999;
+      z-index: 9995 !important;
       box-shadow: 0 0 0 4px var(--accent), 0 0 30px var(--accent-glow);
       border-radius: var(--radius);
+      pointer-events: auto;
     }
 
     .tour-tooltip {
-      position: fixed;
+      position: absolute;
       background: var(--surface);
       border: 1px solid var(--accent);
       border-radius: var(--radius);
       padding: var(--space-4);
       max-width: 350px;
-      z-index: 10000;
+      z-index: 9999;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
+      pointer-events: auto;
     }
 
     .tour-tooltip-header {
@@ -838,7 +859,9 @@ python quick_start.py invoke PROTOCOL_NAME your_username
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--black);
       box-shadow: 0 4px 20px var(--accent-glow);
       transition: transform 0.2s, box-shadow 0.2s;
     }
@@ -913,6 +936,9 @@ python quick_start.py invoke PROTOCOL_NAME your_username
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      font-size: 0.65rem;
+      font-weight: bold;
+      color: var(--accent);
     }
 
     .chat-bubble {
@@ -965,22 +991,39 @@ python quick_start.py invoke PROTOCOL_NAME your_username
       display: flex;
       align-items: center;
       justify-content: center;
+      font-weight: bold;
+      color: var(--black);
       transition: background 0.2s;
     }
 
     .chat-send:hover { background: var(--accent-dark); }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface-light);
+      border-radius: var(--radius);
+      font-size: var(--text-sm);
+    }
+
+    .user-badge-icon {
+      color: var(--accent);
+      font-weight: bold;
+    }
   </style>
 
   <!-- Chat Widget -->
   <div id="chatWidget">
     <div class="chat-panel" id="chatPanel">
       <div class="chat-header">
-        <h4><span>🤖</span> Carbon Assistant</h4>
-        <button class="tour-close" onclick="toggleChat()">×</button>
+        <h4><span>[C6]</span> Carbon Assistant</h4>
+        <button class="tour-close" onclick="toggleChat()">x</button>
       </div>
       <div class="chat-messages" id="chatMessages">
         <div class="chat-message assistant">
-          <div class="chat-avatar">🤖</div>
+          <div class="chat-avatar">[C6]</div>
           <div class="chat-bubble assistant">
             Hi! I'm your Carbon Room assistant. I can help you find assets, understand how to invoke them, and navigate the portal. What would you like to know?
           </div>
@@ -988,11 +1031,11 @@ python quick_start.py invoke PROTOCOL_NAME your_username
       </div>
       <div class="chat-input-area">
         <input type="text" id="chatInput" placeholder="Ask me anything...">
-        <button class="chat-send" onclick="sendChatMessage()">➤</button>
+        <button class="chat-send" onclick="sendChatMessage()">[>]</button>
       </div>
     </div>
     <button class="chat-toggle" onclick="toggleChat()" title="Chat with AI Assistant">
-      💬
+      [?]
     </button>
   </div>
 </body>

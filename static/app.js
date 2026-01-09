@@ -71,9 +71,9 @@ window.truncate = function(text, length = 60) {
 // Copy to clipboard
 window.copyToClipboard = function(text) {
   navigator.clipboard.writeText(text).then(() => {
-    showToast('✅ Copied to clipboard', 'success');
+    showToast('[OK] Copied to clipboard', 'success');
   }).catch(() => {
-    showToast('❌ Failed to copy', 'error');
+    showToast('[ERR] Failed to copy', 'error');
   });
 };
 
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Console easter egg
-  console.log('%c🔐 CARBON ROOM [6]', 'font-size: 24px; font-weight: bold; color: #2D7DD2;');
+  console.log('%c[C6] CARBON ROOM', 'font-size: 24px; font-weight: bold; color: #2D7DD2;');
   console.log('%cCreator IP Registry - Pressure Creates. Structure Enables.', 'font-size: 14px; color: #666;');
   console.log('%cDesigned by Fibonacci-Web-Designer', 'font-size: 12px; color: #2D7DD2;');
 });
@@ -245,17 +245,17 @@ if (window.performance) {
   window.addEventListener('load', () => {
     const perfData = window.performance.timing;
     const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-    console.log(`%c⚡ Page loaded in ${pageLoadTime}ms`, 'color: #2D7DD2;');
+    console.log(`%c[PERF] Page loaded in ${pageLoadTime}ms`, 'color: #2D7DD2;');
   });
 }
 
 // Handle offline/online status
 window.addEventListener('offline', () => {
-  showToast('⚠️ You are offline. Some features may not work.', 'error');
+  showToast('[WARN] You are offline. Some features may not work.', 'error');
 });
 
 window.addEventListener('online', () => {
-  showToast('✅ Back online!', 'success');
+  showToast('[OK] Back online!', 'success');
 });
 
 // Service worker registration (for future PWA support)
