@@ -14,20 +14,25 @@
     <div class="container">
       <!-- Header -->
       <header class="header">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div>
-            <div class="logo-container">
-              <img src="/static/images/logo.png" alt="CARBON[6]" class="logo-image" style="height: 120px; margin-bottom: 15px;">
-            </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div class="logo-container">
+            <img src="/static/images/logo.png" alt="CARBON[6]" class="logo-image" style="height: 60px;">
+          </div>
+          <div style="text-align: center; flex: 1;">
+            <h1 class="main-title">CARBON ROOM</h1>
             <div class="tagline">Creator IP Registry</div>
           </div>
-          <div id="userBadgeContainer"></div>
+          <div id="userBadgeContainer" style="min-width: 60px;"></div>
         </div>
 
         <nav class="nav">
-          <a href="/user" class="nav-link active">Browse Assets</a>
+          <a href="/user" class="nav-link active" data-tour="nav">Browse Assets</a>
           <a href="/user/history" class="nav-link">My History</a>
           <a href="/admin" class="nav-link">Admin Portal</a>
+          <button class="btn btn-ghost" onclick="startTour()" style="margin-left: auto;" title="Take a guided tour">
+            <span>🎯</span>
+            <span>Tour</span>
+          </button>
         </nav>
       </header>
 
@@ -41,7 +46,7 @@
       </div>
 
       <!-- Search & Filters -->
-      <div class="card" style="animation-delay: 0.2s;">
+      <div class="card" style="animation-delay: 0.2s;" data-tour="search">
         <div class="search-bar" style="margin-bottom: var(--space-4);">
           <span class="search-icon">🔍</span>
           <input
@@ -69,7 +74,7 @@
       </div>
 
       <!-- Protocol Cards Grid -->
-      <div id="protocolsGrid" class="card-grid">
+      <div id="protocolsGrid" class="card-grid" data-tour="protocols">
         <!-- Loading skeletons -->
         <div class="card">
           <div class="skeleton" style="height: 24px; width: 70%; margin-bottom: 15px;"></div>
@@ -510,6 +515,485 @@ python quick_start.py invoke PROTOCOL_NAME your_username
         closeInvokeModal();
       }
     });
+
+    // ==========================================
+    // GUIDED TOUR SYSTEM
+    // ==========================================
+    const tourSteps = [
+      {
+        target: '[data-tour="search"]',
+        title: 'Search & Filter',
+        content: 'Find assets quickly using the search bar. Filter by type (Documents, Code, Config, Agents) using the filter chips below.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tour="protocols"]',
+        title: 'Browse Assets',
+        content: 'Click any asset card to view details and invoke it. Each card shows the asset type, description, tags, and usage stats.',
+        position: 'top'
+      },
+      {
+        target: '[data-tour="nav"]',
+        title: 'Navigation',
+        content: 'Browse assets here, view your invocation history, or switch to Admin Portal if you have permissions.',
+        position: 'bottom'
+      },
+      {
+        target: '#chatWidget',
+        title: 'AI Assistant',
+        content: 'Need help? Click the chat icon anytime to ask questions about finding or using assets!',
+        position: 'left'
+      }
+    ];
+
+    let currentTourStep = 0;
+    let tourActive = false;
+
+    function startTour() {
+      tourActive = true;
+      currentTourStep = 0;
+      showTourStep(currentTourStep);
+    }
+
+    function showTourStep(stepIndex) {
+      document.querySelectorAll('.tour-overlay, .tour-tooltip').forEach(el => el.remove());
+
+      if (stepIndex >= tourSteps.length) {
+        endTour();
+        return;
+      }
+
+      const step = tourSteps[stepIndex];
+      const targetEl = document.querySelector(step.target);
+
+      if (!targetEl) {
+        showTourStep(stepIndex + 1);
+        return;
+      }
+
+      const overlay = document.createElement('div');
+      overlay.className = 'tour-overlay';
+      document.body.appendChild(overlay);
+
+      targetEl.classList.add('tour-highlight');
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      setTimeout(() => {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tour-tooltip';
+        tooltip.innerHTML = `
+          <div class="tour-tooltip-header">
+            <span class="tour-step-indicator">Step ${stepIndex + 1} of ${tourSteps.length}</span>
+            <button class="tour-close" onclick="endTour()">×</button>
+          </div>
+          <h3 class="tour-tooltip-title">${step.title}</h3>
+          <p class="tour-tooltip-content">${step.content}</p>
+          <div class="tour-tooltip-actions">
+            ${stepIndex > 0 ? '<button class="btn btn-ghost" onclick="prevTourStep()">← Back</button>' : ''}
+            <button class="btn btn-primary" onclick="nextTourStep()">
+              ${stepIndex === tourSteps.length - 1 ? 'Finish' : 'Next →'}
+            </button>
+          </div>
+        `;
+
+        const rect = targetEl.getBoundingClientRect();
+        tooltip.style.position = 'fixed';
+
+        switch(step.position) {
+          case 'bottom':
+            tooltip.style.top = (rect.bottom + 15) + 'px';
+            tooltip.style.left = (rect.left + rect.width/2) + 'px';
+            tooltip.style.transform = 'translateX(-50%)';
+            break;
+          case 'top':
+            tooltip.style.bottom = (window.innerHeight - rect.top + 15) + 'px';
+            tooltip.style.left = (rect.left + rect.width/2) + 'px';
+            tooltip.style.transform = 'translateX(-50%)';
+            break;
+          case 'left':
+            tooltip.style.top = (rect.top + rect.height/2) + 'px';
+            tooltip.style.right = (window.innerWidth - rect.left + 15) + 'px';
+            tooltip.style.transform = 'translateY(-50%)';
+            break;
+        }
+
+        document.body.appendChild(tooltip);
+      }, 300);
+    }
+
+    function nextTourStep() {
+      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+      currentTourStep++;
+      showTourStep(currentTourStep);
+    }
+
+    function prevTourStep() {
+      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+      currentTourStep--;
+      showTourStep(currentTourStep);
+    }
+
+    function endTour() {
+      tourActive = false;
+      document.querySelectorAll('.tour-overlay, .tour-tooltip, .tour-highlight').forEach(el => {
+        el.classList.remove('tour-highlight');
+        if (el.classList.contains('tour-overlay') || el.classList.contains('tour-tooltip')) {
+          el.remove();
+        }
+      });
+      localStorage.setItem('carbon_user_tour_completed', 'true');
+      showToast('🎉 Tour complete! Click Tour anytime to revisit.', 'success');
+    }
+
+    // Auto-start tour for new users
+    document.addEventListener('DOMContentLoaded', () => {
+      const hasVisited = localStorage.getItem('carbon_user_tour_completed');
+      if (!hasVisited) {
+        setTimeout(() => {
+          if (confirm('Welcome to Carbon Room! Would you like a quick tour?')) {
+            startTour();
+          } else {
+            localStorage.setItem('carbon_user_tour_completed', 'true');
+          }
+        }, 1000);
+      }
+    });
+
+    // ==========================================
+    // AI CHAT ASSISTANT
+    // ==========================================
+    const chatKnowledge = {
+      'search': 'Use the search bar at the top to find assets by name, description, or tags. The results filter in real-time as you type!',
+      'filter': 'Use the filter chips below the search bar to show only specific asset types: Documents, Code, Config, or Agents.',
+      'invoke': 'Click any asset card to open the invoke modal. Enter your user ID and click "Invoke Protocol" to access the asset. Your usage will be tracked.',
+      'auth': 'First-time users need to authenticate with their email and name. This creates your profile for tracking invocations.',
+      'history': 'Click "My History" in the navigation to see all assets you\'ve previously invoked.',
+      'admin': 'The Admin Portal is for managing and uploading new assets. You need admin permissions to access it.',
+      'tags': 'Tags help categorize assets. Click a tag on any card to see related assets.',
+      'verified': 'All assets show a [6] VERIFIED badge, meaning they\'re registered on the blockchain with IP protection.',
+      'help': 'I can help with: searching assets, filtering by type, invoking protocols, viewing your history, and understanding verification. Just ask!',
+      'default': 'I\'m your Carbon Room assistant! I can help you find and use assets. Try asking about "how to search", "invoke", or "filtering".'
+    };
+
+    function findBestAnswer(query) {
+      const q = query.toLowerCase();
+
+      if (q.includes('search') || q.includes('find')) return chatKnowledge['search'];
+      if (q.includes('filter') || q.includes('type')) return chatKnowledge['filter'];
+      if (q.includes('invoke') || q.includes('use') || q.includes('access')) return chatKnowledge['invoke'];
+      if (q.includes('auth') || q.includes('login') || q.includes('sign')) return chatKnowledge['auth'];
+      if (q.includes('history') || q.includes('past')) return chatKnowledge['history'];
+      if (q.includes('admin') || q.includes('upload')) return chatKnowledge['admin'];
+      if (q.includes('tag')) return chatKnowledge['tags'];
+      if (q.includes('verified') || q.includes('blockchain')) return chatKnowledge['verified'];
+      if (q.includes('help') || q.includes('what can')) return chatKnowledge['help'];
+
+      return chatKnowledge['default'];
+    }
+
+    function toggleChat() {
+      const chatPanel = document.getElementById('chatPanel');
+      chatPanel.classList.toggle('open');
+      if (chatPanel.classList.contains('open')) {
+        document.getElementById('chatInput').focus();
+      }
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const messages = document.getElementById('chatMessages');
+      const query = input.value.trim();
+
+      if (!query) return;
+
+      messages.innerHTML += `
+        <div class="chat-message user">
+          <div class="chat-bubble user">${query}</div>
+        </div>
+      `;
+
+      input.value = '';
+      messages.scrollTop = messages.scrollHeight;
+
+      setTimeout(() => {
+        const answer = findBestAnswer(query);
+        messages.innerHTML += `
+          <div class="chat-message assistant">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-bubble assistant">${answer}</div>
+          </div>
+        `;
+        messages.scrollTop = messages.scrollHeight;
+      }, 500);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatInput = document.getElementById('chatInput');
+      if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') sendChatMessage();
+        });
+      }
+    });
   </script>
+
+  <!-- Tour & Chat Styles -->
+  <style>
+    .main-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin: 0;
+      text-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    .tour-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9998;
+      pointer-events: none;
+    }
+
+    .tour-highlight {
+      position: relative;
+      z-index: 9999;
+      box-shadow: 0 0 0 4px var(--accent), 0 0 30px var(--accent-glow);
+      border-radius: var(--radius);
+    }
+
+    .tour-tooltip {
+      position: fixed;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: var(--space-4);
+      max-width: 350px;
+      z-index: 10000;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
+    }
+
+    .tour-tooltip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+
+    .tour-step-indicator {
+      font-size: var(--text-xs);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .tour-close {
+      background: none;
+      border: none;
+      color: var(--gray);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .tour-close:hover { color: var(--white); }
+
+    .tour-tooltip-title {
+      font-size: var(--text-lg);
+      color: var(--white);
+      margin: 0 0 var(--space-2);
+    }
+
+    .tour-tooltip-content {
+      color: var(--gray-light);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      margin: 0 0 var(--space-4);
+    }
+
+    .tour-tooltip-actions {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: flex-end;
+    }
+
+    #chatWidget {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9000;
+    }
+
+    .chat-toggle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .chat-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 30px var(--accent-glow);
+    }
+
+    .chat-panel {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      width: 360px;
+      height: 450px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .chat-panel.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .chat-header {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-header h4 {
+      margin: 0;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .chat-message {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .chat-message.user { justify-content: flex-end; }
+
+    .chat-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+
+    .chat-bubble.assistant {
+      background: var(--surface-light);
+      color: var(--gray-light);
+    }
+
+    .chat-bubble.user {
+      background: var(--accent);
+      color: var(--black);
+    }
+
+    .chat-input-area {
+      padding: var(--space-3);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      background: var(--black);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-2) var(--space-3);
+      color: var(--white);
+      font-size: var(--text-sm);
+    }
+
+    .chat-input-area input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .chat-send {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .chat-send:hover { background: var(--accent-dark); }
+  </style>
+
+  <!-- Chat Widget -->
+  <div id="chatWidget">
+    <div class="chat-panel" id="chatPanel">
+      <div class="chat-header">
+        <h4><span>🤖</span> Carbon Assistant</h4>
+        <button class="tour-close" onclick="toggleChat()">×</button>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-message assistant">
+          <div class="chat-avatar">🤖</div>
+          <div class="chat-bubble assistant">
+            Hi! I'm your Carbon Room assistant. I can help you find assets, understand how to invoke them, and navigate the portal. What would you like to know?
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Ask me anything...">
+        <button class="chat-send" onclick="sendChatMessage()">➤</button>
+      </div>
+    </div>
+    <button class="chat-toggle" onclick="toggleChat()" title="Chat with AI Assistant">
+      💬
+    </button>
+  </div>
 </body>
 </html>
