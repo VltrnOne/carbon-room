@@ -27,8 +27,8 @@
 
         <nav class="nav" data-tour="nav">
           <a href="/admin" class="nav-link active">Dashboard</a>
-          <a href="/admin/protocols" class="nav-link">Protocols</a>
-          <a href="/admin/telemetry" class="nav-link">Telemetry</a>
+          <a href="#" class="nav-link" onclick="showProtocolInfo(); return false;">Protocols</a>
+          <a href="#" class="nav-link" onclick="showTelemetryInfo(); return false;">Telemetry</a>
           <a href="/user" class="nav-link">User Portal</a>
           <button class="btn btn-ghost" onclick="startTour()" style="margin-left: auto;" title="Take a guided tour">
             <span>[?]</span>
@@ -423,16 +423,186 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
         const files = dt.files;
         fileInput.files = files;
         updateFileLabel(files[0].name);
+        autoPopulateFromFile(files[0]);
       });
 
       fileInput.addEventListener('change', (e) => {
         if (e.target.files[0]) {
-          updateFileLabel(e.target.files[0].name);
+          const file = e.target.files[0];
+          updateFileLabel(file.name);
+          autoPopulateFromFile(file);
         }
       });
 
       function updateFileLabel(filename) {
         fileLabel.textContent = `Selected: ${filename}`;
+      }
+
+      // Auto-populate form fields from uploaded file
+      async function autoPopulateFromFile(file) {
+        const form = document.getElementById('uploadForm');
+        const nameField = form.querySelector('input[name="name"]');
+        const typeField = form.querySelector('select[name="type"]');
+        const tagsField = form.querySelector('input[name="tags"]');
+        const descField = form.querySelector('textarea[name="description"]');
+
+        // Extract name from filename (remove extension, convert to readable)
+        const baseName = file.name.replace(/\.[^/.]+$/, '');
+        const readableName = baseName
+          .replace(/[-_]/g, ' ')
+          .replace(/([a-z])([A-Z])/g, '$1 $2')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join('_')
+          .toUpperCase();
+
+        // Only auto-fill if the field is empty
+        if (!nameField.value) {
+          nameField.value = readableName;
+        }
+
+        // Detect type from file extension
+        const ext = file.name.split('.').pop().toLowerCase();
+        const typeMap = {
+          'py': 'code', 'js': 'code', 'ts': 'code', 'jsx': 'code', 'tsx': 'code',
+          'java': 'code', 'cpp': 'code', 'c': 'code', 'go': 'code', 'rs': 'code',
+          'rb': 'code', 'php': 'code', 'swift': 'code', 'kt': 'code', 'sol': 'code',
+          'json': 'config', 'yaml': 'config', 'yml': 'config', 'xml': 'config',
+          'toml': 'config', 'ini': 'config', 'env': 'config', 'conf': 'config',
+          'md': 'document', 'txt': 'document', 'pdf': 'document', 'doc': 'document',
+          'docx': 'document', 'rtf': 'document', 'html': 'document',
+          'png': 'media', 'jpg': 'media', 'jpeg': 'media', 'gif': 'media',
+          'svg': 'media', 'mp4': 'media', 'mp3': 'media', 'wav': 'media',
+          'psd': 'media', 'ai': 'media', 'sketch': 'media',
+          'template': 'template', 'tpl': 'template', 'mustache': 'template',
+          'hbs': 'template', 'ejs': 'template', 'pug': 'template'
+        };
+
+        if (!typeField.value && typeMap[ext]) {
+          typeField.value = typeMap[ext];
+        }
+
+        // Generate tags from filename and extension
+        if (!tagsField.value) {
+          const tags = [];
+          tags.push(ext);
+          // Extract words from filename for tags
+          const words = baseName.replace(/[-_]/g, ' ').split(' ').filter(w => w.length > 2);
+          tags.push(...words.slice(0, 3).map(w => w.toLowerCase()));
+          tagsField.value = [...new Set(tags)].join(', ');
+        }
+
+        // Try to read text files for description
+        if (!descField.value && file.type.startsWith('text/') ||
+            ['js', 'py', 'ts', 'json', 'md', 'txt', 'yaml', 'yml', 'xml', 'html', 'css', 'sol'].includes(ext)) {
+          try {
+            const text = await readFileAsText(file);
+            const description = extractDescription(text, ext);
+            if (description) {
+              descField.value = description;
+            }
+          } catch (e) {
+            console.log('Could not read file for description');
+          }
+        }
+
+        // Show toast notification
+        showToast('[OK] Form auto-populated from file. Review and adjust as needed.', 'success');
+      }
+
+      // Read file as text
+      function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = reject;
+          // Only read first 10KB for description extraction
+          reader.readAsText(file.slice(0, 10240));
+        });
+      }
+
+      // Extract description from file content
+      function extractDescription(text, ext) {
+        let description = '';
+
+        // For Python: look for docstring
+        if (ext === 'py') {
+          const docstringMatch = text.match(/^["']{3}([\s\S]*?)["']{3}/m);
+          if (docstringMatch) {
+            description = docstringMatch[1].trim().split('\n')[0];
+          }
+        }
+
+        // For JavaScript/TypeScript: look for JSDoc or first comment
+        if (['js', 'ts', 'jsx', 'tsx'].includes(ext)) {
+          const jsdocMatch = text.match(/\/\*\*\s*\n?\s*\*?\s*(.+?)(?:\n|\*\/)/);
+          if (jsdocMatch) {
+            description = jsdocMatch[1].trim();
+          }
+        }
+
+        // For Markdown: use first heading or paragraph
+        if (ext === 'md') {
+          const headingMatch = text.match(/^#\s+(.+)$/m);
+          if (headingMatch) {
+            description = headingMatch[1].trim();
+          } else {
+            const paragraphMatch = text.match(/^(?!#)(.{20,}?)$/m);
+            if (paragraphMatch) {
+              description = paragraphMatch[1].trim();
+            }
+          }
+        }
+
+        // For JSON: look for description field
+        if (ext === 'json') {
+          try {
+            const json = JSON.parse(text);
+            if (json.description) {
+              description = json.description;
+            } else if (json.name) {
+              description = `Configuration for ${json.name}`;
+            }
+          } catch (e) {}
+        }
+
+        // For Solidity: look for NatSpec
+        if (ext === 'sol') {
+          const natspecMatch = text.match(/\/\/\/\s*@notice\s+(.+)/);
+          if (natspecMatch) {
+            description = natspecMatch[1].trim();
+          }
+        }
+
+        // Fallback: first non-empty line that's not a comment or import
+        if (!description) {
+          const lines = text.split('\n');
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed &&
+                !trimmed.startsWith('//') &&
+                !trimmed.startsWith('#') &&
+                !trimmed.startsWith('/*') &&
+                !trimmed.startsWith('*') &&
+                !trimmed.startsWith('import') &&
+                !trimmed.startsWith('from') &&
+                !trimmed.startsWith('require') &&
+                trimmed.length > 10) {
+              description = trimmed.substring(0, 200);
+              break;
+            }
+          }
+        }
+
+        // Clean up and truncate
+        if (description) {
+          description = description.replace(/\s+/g, ' ').trim();
+          if (description.length > 200) {
+            description = description.substring(0, 200) + '...';
+          }
+        }
+
+        return description;
       }
 
       // Form submission
@@ -502,20 +672,238 @@ python quick_start.py invoke GOD_MODE_WIZARD your_name
     }
 
     // View protocol details
-    function viewProtocolDetails(name) {
-      showModal('Protocol Details', `
-        <div class="protocol-details">
-          <h3 class="text-accent mb-3">${name}</h3>
-          <p class="text-muted">Detailed protocol information would be displayed here.</p>
-          <p class="text-muted mt-3">In production, this would show:</p>
-          <ul class="text-muted" style="margin-left: 20px; margin-top: 10px;">
-            <li>Full description and documentation</li>
-            <li>Usage history and analytics</li>
-            <li>Blockchain verification proof</li>
-            <li>Access permissions and audit trail</li>
-          </ul>
+    async function viewProtocolDetails(name) {
+      try {
+        const response = await fetch('/api/protocols');
+        const data = await response.json();
+        const protocol = data.protocols.find(p => p.name === name);
+
+        if (!protocol) {
+          showModal('Protocol Not Found', '<p class="text-muted">Protocol details could not be loaded.</p>');
+          return;
+        }
+
+        showModal('Protocol Details', `
+          <div class="protocol-details">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-4);">
+              <h3 class="text-accent" style="margin: 0;">${protocol.name}</h3>
+              <span class="badge badge-${protocol.type}">${protocol.type}</span>
+            </div>
+
+            <div class="info-section">
+              <div class="info-label">Description</div>
+              <div class="info-value">${protocol.description}</div>
+            </div>
+
+            <div class="info-section">
+              <div class="info-label">Creator</div>
+              <div class="info-value">${protocol.creator || 'Unknown'}</div>
+            </div>
+
+            <div class="info-section">
+              <div class="info-label">Version</div>
+              <div class="info-value">${protocol.version || '1.0'}</div>
+            </div>
+
+            <div class="info-section">
+              <div class="info-label">Tags</div>
+              <div class="info-value">${protocol.tags.map(t => '<span class="tag">' + t + '</span>').join(' ')}</div>
+            </div>
+
+            <div class="info-section">
+              <div class="info-label">Usage Statistics</div>
+              <div class="info-value">${protocol.invocations} total invocations</div>
+            </div>
+
+            <div class="info-section">
+              <div class="info-label">Watermark</div>
+              <div class="info-value" style="font-family: monospace;">${protocol.watermark || 'N/A'}</div>
+            </div>
+
+            ${protocol.is_remix ? `
+              <div class="info-section" style="border-left: 3px solid var(--accent); padding-left: var(--space-3); margin-top: var(--space-4);">
+                <div class="info-label">Remix Attribution</div>
+                <div class="info-value">This asset is based on original work by another creator.</div>
+              </div>
+            ` : ''}
+          </div>
+
+          <style>
+            .info-section { margin-bottom: var(--space-3); }
+            .info-label { font-size: var(--text-xs); color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+            .info-value { color: var(--gray-light); }
+          </style>
+        `);
+      } catch (error) {
+        showModal('Error', '<p class="text-muted">Failed to load protocol details.</p>');
+      }
+    }
+
+    // Show Protocol Info Modal
+    function showProtocolInfo() {
+      showModal('Protocol Registry', `
+        <div class="info-modal-content">
+          <div class="info-header">
+            <span class="info-icon">[P]</span>
+            <h3>What are Protocols?</h3>
+          </div>
+
+          <p class="text-muted mb-4">
+            Protocols are your intellectual property assets registered on the Carbon Room blockchain. Each protocol receives:
+          </p>
+
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">[#]</span>
+              <div>
+                <strong>SHA-256 Blockchain Hash</strong>
+                <p class="text-muted">Immutable cryptographic proof of creation and ownership</p>
+              </div>
+            </div>
+
+            <div class="feature-item">
+              <span class="feature-icon">[W]</span>
+              <div>
+                <strong>Unique Watermark</strong>
+                <p class="text-muted">C6-XXXXXXXX-XXXXXXXX identifier embedded in your asset</p>
+              </div>
+            </div>
+
+            <div class="feature-item">
+              <span class="feature-icon">[C]</span>
+              <div>
+                <strong>Official Certificate</strong>
+                <p class="text-muted">Downloadable legal document proving IP registration</p>
+              </div>
+            </div>
+
+            <div class="feature-item">
+              <span class="feature-icon">[A]</span>
+              <div>
+                <strong>Attribution Chain</strong>
+                <p class="text-muted">Track remix lineage and derivative works</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-footer">
+            <h4>Supported Asset Types</h4>
+            <div class="type-badges">
+              <span class="badge badge-document">Document</span>
+              <span class="badge badge-code">Code</span>
+              <span class="badge badge-config">Config</span>
+              <span class="badge badge-agent">Agent</span>
+              <span class="badge badge-template">Template</span>
+              <span class="badge badge-media">Media</span>
+            </div>
+          </div>
         </div>
+
+        <style>
+          .info-modal-content { max-width: 500px; }
+          .info-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
+          .info-header h3 { margin: 0; color: var(--white); }
+          .info-icon { font-size: 1.5rem; font-weight: bold; color: var(--accent); background: var(--accent-dim); padding: 10px 15px; border-radius: var(--radius); }
+          .feature-list { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4); }
+          .feature-item { display: flex; gap: var(--space-3); align-items: start; padding: var(--space-3); background: var(--surface-light); border-radius: var(--radius); }
+          .feature-item strong { color: var(--white); display: block; margin-bottom: 4px; }
+          .feature-item p { margin: 0; font-size: var(--text-sm); }
+          .feature-icon { color: var(--accent); font-weight: bold; min-width: 30px; }
+          .info-footer { border-top: 1px solid var(--border); padding-top: var(--space-4); }
+          .info-footer h4 { color: var(--gray-light); font-size: var(--text-sm); margin-bottom: var(--space-2); }
+          .type-badges { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+        </style>
       `);
+    }
+
+    // Show Telemetry Info Modal
+    function showTelemetryInfo() {
+      showModal('Telemetry System', `
+        <div class="info-modal-content">
+          <div class="info-header">
+            <span class="info-icon">[T]</span>
+            <h3>Usage Telemetry</h3>
+          </div>
+
+          <p class="text-muted mb-4">
+            Carbon Room collects anonymous usage data to help you understand how your assets are being used across your organization.
+          </p>
+
+          <div class="telemetry-sections">
+            <div class="telemetry-section">
+              <h4>Data Collected</h4>
+              <ul class="telemetry-list">
+                <li><span class="bullet">[+]</span> User ID (who invoked the asset)</li>
+                <li><span class="bullet">[+]</span> Timestamp (when it was invoked)</li>
+                <li><span class="bullet">[+]</span> Protocol name (what was accessed)</li>
+                <li><span class="bullet">[+]</span> Working directory structure</li>
+                <li><span class="bullet">[+]</span> File extension distribution</li>
+              </ul>
+            </div>
+
+            <div class="telemetry-section">
+              <h4>Privacy Protection</h4>
+              <ul class="telemetry-list">
+                <li><span class="bullet">[-]</span> No file contents are collected</li>
+                <li><span class="bullet">[-]</span> No personal information beyond user ID</li>
+                <li><span class="bullet">[-]</span> No source code is transmitted</li>
+                <li><span class="bullet">[-]</span> Data stored locally on your server</li>
+              </ul>
+            </div>
+
+            <div class="telemetry-section">
+              <h4>Analytics Available</h4>
+              <div class="analytics-grid">
+                <div class="analytics-item">
+                  <div class="analytics-value" id="telemetryCount">--</div>
+                  <div class="analytics-label">Records</div>
+                </div>
+                <div class="analytics-item">
+                  <div class="analytics-value" id="uniqueUsers">--</div>
+                  <div class="analytics-label">Users</div>
+                </div>
+                <div class="analytics-item">
+                  <div class="analytics-value" id="avgDepth">--</div>
+                  <div class="analytics-label">Avg Depth</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-footer">
+            <p class="text-muted" style="font-size: var(--text-xs);">
+              IP PROTECTION: Telemetry helps demonstrate active use of your intellectual property, strengthening your ownership claims.
+            </p>
+          </div>
+        </div>
+
+        <style>
+          .telemetry-sections { display: flex; flex-direction: column; gap: var(--space-4); }
+          .telemetry-section h4 { color: var(--accent); font-size: var(--text-sm); margin-bottom: var(--space-2); text-transform: uppercase; letter-spacing: 1px; }
+          .telemetry-list { list-style: none; padding: 0; margin: 0; }
+          .telemetry-list li { display: flex; align-items: center; gap: var(--space-2); padding: 6px 0; color: var(--gray-light); font-size: var(--text-sm); }
+          .bullet { color: var(--accent); font-weight: bold; min-width: 24px; }
+          .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-top: var(--space-2); }
+          .analytics-item { text-align: center; padding: var(--space-3); background: var(--surface-light); border-radius: var(--radius); }
+          .analytics-value { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+          .analytics-label { font-size: var(--text-xs); color: var(--gray); text-transform: uppercase; }
+        </style>
+      `);
+
+      // Load telemetry stats
+      loadTelemetryStats();
+    }
+
+    // Load telemetry statistics
+    async function loadTelemetryStats() {
+      try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        const countEl = document.getElementById('telemetryCount');
+        if (countEl) countEl.textContent = data.telemetry_records || 0;
+      } catch (error) {
+        console.log('Could not load telemetry stats');
+      }
     }
 
     // Animate counter
