@@ -216,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Console easter egg
-  console.log('%c🔐 CARBON ROOM [6]', 'font-size: 24px; font-weight: bold; color: #00ff88;');
+  console.log('%c🔐 CARBON ROOM [6]', 'font-size: 24px; font-weight: bold; color: #2D7DD2;');
   console.log('%cCreator IP Registry - Pressure Creates. Structure Enables.', 'font-size: 14px; color: #666;');
-  console.log('%cDesigned by Fibonacci-Web-Designer', 'font-size: 12px; color: #00ff88;');
+  console.log('%cDesigned by Fibonacci-Web-Designer', 'font-size: 12px; color: #2D7DD2;');
 });
 
 // Keyboard shortcuts
@@ -245,7 +245,7 @@ if (window.performance) {
   window.addEventListener('load', () => {
     const perfData = window.performance.timing;
     const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-    console.log(`%c⚡ Page loaded in ${pageLoadTime}ms`, 'color: #00ff88;');
+    console.log(`%c⚡ Page loaded in ${pageLoadTime}ms`, 'color: #2D7DD2;');
   });
 }
 

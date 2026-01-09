@@ -93,18 +93,18 @@ def generate_certificate_html(data: dict) -> str:
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{ font-family: 'Georgia', serif; background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%); min-height: 100vh; padding: 40px; color: #e0e0e0; }}
-        .certificate {{ max-width: 800px; margin: 0 auto; background: #111; border: 3px solid #00ff88; border-radius: 20px; padding: 60px; position: relative; }}
-        .badge {{ position: absolute; top: -20px; right: 40px; background: #00ff88; color: #0a0a0a; padding: 10px 30px; border-radius: 5px; font-weight: bold; font-family: monospace; }}
-        h1 {{ text-align: center; color: #00ff88; font-size: 2rem; margin-bottom: 10px; letter-spacing: 3px; }}
+        .certificate {{ max-width: 800px; margin: 0 auto; background: #111; border: 3px solid #2D7DD2; border-radius: 20px; padding: 60px; position: relative; }}
+        .badge {{ position: absolute; top: -20px; right: 40px; background: #2D7DD2; color: #0a0a0a; padding: 10px 30px; border-radius: 5px; font-weight: bold; font-family: monospace; }}
+        h1 {{ text-align: center; color: #2D7DD2; font-size: 2rem; margin-bottom: 10px; letter-spacing: 3px; }}
         .subtitle {{ text-align: center; color: #666; margin-bottom: 40px; font-style: italic; }}
-        .section {{ margin: 30px 0; padding: 20px; background: rgba(0,255,136,0.05); border-radius: 10px; }}
-        .section-title {{ color: #00ff88; font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 15px; text-transform: uppercase; }}
+        .section {{ margin: 30px 0; padding: 20px; background: rgba(45,125,210,0.05); border-radius: 10px; }}
+        .section-title {{ color: #2D7DD2; font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 15px; text-transform: uppercase; }}
         .field {{ display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }}
         .field-label {{ color: #888; }}
         .field-value {{ color: #fff; font-family: monospace; }}
         .hash {{ word-break: break-all; font-size: 0.85rem; background: #0a0a0a; padding: 15px; border-radius: 5px; margin-top: 10px; }}
         .footer {{ text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; }}
-        .logo {{ color: #00ff88; font-weight: bold; font-size: 1.2rem; }}
+        .logo {{ color: #2D7DD2; font-weight: bold; font-size: 1.2rem; }}
         @media print {{ body {{ background: white; color: black; }} .certificate {{ border-color: #333; }} }}
     </style>
 </head>
